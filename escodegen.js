@@ -99,6 +99,16 @@
         IfStatement: 'IfStatement',
         ImportSpecifier: 'ImportSpecifier',
         ImportDeclaration: 'ImportDeclaration',
+        XJSElement: 'XJSElement',
+        XJSOpeningElement: "XJSOpeningElement",
+        XJSClosingElement: "XJSClosingElement",
+        XJSIdentifier: "XJSIdentifier",
+        XJSNamespacedName: "XJSNamespacedName",
+        XJSMemberExpression: "XJSMemberExpression",
+        XJSSpreadAttribute: "XJSSpreadAttribute",
+        XJSAttribute: "XJSAttribute",
+        XJSExpressionContainer: "XJSExpressionContainer",
+        XJSEmptyExpression: "XJSEmptyExpression",
         Literal: 'Literal',
         LabeledStatement: 'LabeledStatement',
         LogicalExpression: 'LogicalExpression',
@@ -145,6 +155,17 @@
         case Syntax.FunctionExpression:
         case Syntax.Identifier:
         case Syntax.ImportSpecifier:
+        case Syntax.XJSElement:
+        case Syntax.XJSOpeningElement:
+        case Syntax.XJSClosingElement:
+        case Syntax.XJSIdentifier:
+        case Syntax.XJSElementName:
+        case Syntax.XJSNamespacedName:
+        case Syntax.XJSAttribute:
+        case Syntax.XJSMemberExpression:
+        case Syntax.XJSExpressionContainer:
+        case Syntax.XJSEmptyExpression:
+        case Syntax.XJSSpreadAttribute:
         case Syntax.Literal:
         case Syntax.LogicalExpression:
         case Syntax.MemberExpression:
@@ -1234,6 +1255,11 @@
 
             leftSource = fragment.toString();
 
+            // Special case for a less-than following a JSX element:
+            if(expr.left.type == Syntax.XJSElement && expr.operator == '<') {
+                fragment = ['(', fragment, ')'];
+            }
+
             if (leftSource.charCodeAt(leftSource.length - 1) === 0x2F /* / */ && esutils.code.isIdentifierPart(expr.operator.charCodeAt(0))) {
                 result = [fragment, noEmptySpace(), expr.operator];
             } else {
@@ -1324,6 +1350,7 @@
             break;
 
         case Syntax.MemberExpression:
+        case Syntax.XJSMemberExpression:
             result = [generateExpression(expr.object, {
                 precedence: Precedence.Call,
                 allowIn: true,
@@ -1712,7 +1739,16 @@
             break;
 
         case Syntax.Identifier:
+        case Syntax.XJSIdentifier:
             result = generateIdentifier(expr);
+            break;
+
+        case Syntax.XJSNamespacedName:
+            result = [
+                generateIdentifier(expr.namespace),
+                ":",
+                generateIdentifier(expr.name),
+            ];
             break;
 
         case Syntax.ImportSpecifier:
@@ -1721,6 +1757,86 @@
             if (expr.name) {
                 result.push(noEmptySpace() + 'as' + noEmptySpace() + expr.name.name);
             }
+            break;
+
+        case Syntax.XJSElement:
+            result = [generateExpression(expr.openingElement, {
+
+            })];
+            if (expr.children) {
+                for (i = 0, len = expr.children.length; i < len; ++i) {
+                    if (expr.children[i].type == 'Literal') {
+                        result.push( expr.children[i].value);
+                    } else {
+                        result.push(generateExpression(expr.children[i], {
+                            precedence: Precedence.Sequence,
+                            allowIn: true,
+                            allowCall: true
+                        }));
+                    }
+                }
+            }
+            if (expr.closingElement) {
+                result.push(generateExpression(expr.closingElement, {
+
+                }));
+            }
+            break;
+
+        case Syntax.XJSOpeningElement:
+            result = [
+                '<',
+                generateExpression(expr.name, {})
+            ];
+            if (expr.attributes.length) {
+                for (i = 0, len = expr.attributes.length; i < len; ++i) {
+                    result.push(' ');
+                    result.push(generateExpression(expr.attributes[i], {
+
+                    }));
+                }
+            }
+            result.push(expr.selfClosing ? ' />' : '>');
+            break;
+
+        case Syntax.XJSClosingElement:
+            result = [
+                '</',
+                generateExpression(expr.name, {}),
+                '>'
+            ];
+            break;
+
+        case Syntax.XJSAttribute:
+            if (expr.value) {
+                result = [
+                    generateExpression(expr.name, {}),
+                    '=',
+                ];
+                if (expr.value.type == Syntax.Literal) {
+                    result.push(expr.value.raw);
+                } else {
+                    result.push(generateExpression(expr.value, {}));
+                }
+            } else {
+                result = [generateExpression(expr.name, {})];
+            }
+            break;
+
+        case Syntax.XJSSpreadAttribute:
+            result = [
+                '{...',
+                generateExpression(expr.argument, {}),
+                '}'
+            ];
+            break;
+
+        case Syntax.XJSExpressionContainer:
+            result = ['{', generateExpression(expr.expression, {}), '}'];
+            break;
+
+        case Syntax.XJSEmptyExpression:
+            result = [''];
             break;
 
         case Syntax.Literal:
