@@ -99,16 +99,16 @@
         IfStatement: 'IfStatement',
         ImportSpecifier: 'ImportSpecifier',
         ImportDeclaration: 'ImportDeclaration',
-        XJSElement: 'XJSElement',
-        XJSOpeningElement: "XJSOpeningElement",
-        XJSClosingElement: "XJSClosingElement",
-        XJSIdentifier: "XJSIdentifier",
-        XJSNamespacedName: "XJSNamespacedName",
-        XJSMemberExpression: "XJSMemberExpression",
-        XJSSpreadAttribute: "XJSSpreadAttribute",
-        XJSAttribute: "XJSAttribute",
-        XJSExpressionContainer: "XJSExpressionContainer",
-        XJSEmptyExpression: "XJSEmptyExpression",
+        JSXElement: 'JSXElement',
+        JSXOpeningElement: "JSXOpeningElement",
+        JSXClosingElement: "JSXClosingElement",
+        JSXIdentifier: "JSXIdentifier",
+        JSXNamespacedName: "JSXNamespacedName",
+        JSXMemberExpression: "JSXMemberExpression",
+        JSXSpreadAttribute: "JSXSpreadAttribute",
+        JSXAttribute: "JSXAttribute",
+        JSXExpressionContainer: "JSXExpressionContainer",
+        JSXEmptyExpression: "JSXEmptyExpression",
         Literal: 'Literal',
         LabeledStatement: 'LabeledStatement',
         LogicalExpression: 'LogicalExpression',
@@ -155,17 +155,17 @@
         case Syntax.FunctionExpression:
         case Syntax.Identifier:
         case Syntax.ImportSpecifier:
-        case Syntax.XJSElement:
-        case Syntax.XJSOpeningElement:
-        case Syntax.XJSClosingElement:
-        case Syntax.XJSIdentifier:
-        case Syntax.XJSElementName:
-        case Syntax.XJSNamespacedName:
-        case Syntax.XJSAttribute:
-        case Syntax.XJSMemberExpression:
-        case Syntax.XJSExpressionContainer:
-        case Syntax.XJSEmptyExpression:
-        case Syntax.XJSSpreadAttribute:
+        case Syntax.JSXElement:
+        case Syntax.JSXOpeningElement:
+        case Syntax.JSXClosingElement:
+        case Syntax.JSXIdentifier:
+        case Syntax.JSXElementName:
+        case Syntax.JSXNamespacedName:
+        case Syntax.JSXAttribute:
+        case Syntax.JSXMemberExpression:
+        case Syntax.JSXExpressionContainer:
+        case Syntax.JSXEmptyExpression:
+        case Syntax.JSXSpreadAttribute:
         case Syntax.Literal:
         case Syntax.LogicalExpression:
         case Syntax.MemberExpression:
@@ -1256,7 +1256,7 @@
             leftSource = fragment.toString();
 
             // Special case for a less-than following a JSX element:
-            if(expr.left.type == Syntax.XJSElement && expr.operator == '<') {
+            if(expr.left.type == Syntax.JSXElement && expr.operator == '<') {
                 fragment = ['(', fragment, ')'];
             }
 
@@ -1350,7 +1350,7 @@
             break;
 
         case Syntax.MemberExpression:
-        case Syntax.XJSMemberExpression:
+        case Syntax.JSXMemberExpression:
             result = [generateExpression(expr.object, {
                 precedence: Precedence.Call,
                 allowIn: true,
@@ -1739,11 +1739,11 @@
             break;
 
         case Syntax.Identifier:
-        case Syntax.XJSIdentifier:
+        case Syntax.JSXIdentifier:
             result = generateIdentifier(expr);
             break;
 
-        case Syntax.XJSNamespacedName:
+        case Syntax.JSXNamespacedName:
             result = [
                 generateIdentifier(expr.namespace),
                 ":",
@@ -1759,7 +1759,7 @@
             }
             break;
 
-        case Syntax.XJSElement:
+        case Syntax.JSXElement:
             result = [generateExpression(expr.openingElement, {
 
             })];
@@ -1783,7 +1783,7 @@
             }
             break;
 
-        case Syntax.XJSOpeningElement:
+        case Syntax.JSXOpeningElement:
             result = [
                 '<',
                 generateExpression(expr.name, {})
@@ -1799,7 +1799,7 @@
             result.push(expr.selfClosing ? ' />' : '>');
             break;
 
-        case Syntax.XJSClosingElement:
+        case Syntax.JSXClosingElement:
             result = [
                 '</',
                 generateExpression(expr.name, {}),
@@ -1807,7 +1807,7 @@
             ];
             break;
 
-        case Syntax.XJSAttribute:
+        case Syntax.JSXAttribute:
             if (expr.value) {
                 result = [
                     generateExpression(expr.name, {}),
@@ -1823,7 +1823,7 @@
             }
             break;
 
-        case Syntax.XJSSpreadAttribute:
+        case Syntax.JSXSpreadAttribute:
             result = [
                 '{...',
                 generateExpression(expr.argument, {}),
@@ -1831,11 +1831,11 @@
             ];
             break;
 
-        case Syntax.XJSExpressionContainer:
+        case Syntax.JSXExpressionContainer:
             result = ['{', generateExpression(expr.expression, {}), '}'];
             break;
 
-        case Syntax.XJSEmptyExpression:
+        case Syntax.JSXEmptyExpression:
             result = [''];
             break;
 
