@@ -2080,6 +2080,10 @@
             return result;
         },
 
+        Super: function (expr, precedence, flags) {
+            return 'super';
+        },
+
         MethodDefinition: function (expr, precedence, flags) {
             var result, fragment;
             if (expr['static']) {
@@ -2235,7 +2239,7 @@
         },
 
         ImportDefaultSpecifier: function (expr, precedence, flags) {
-            return generateIdentifier(expr.id);
+            return generateIdentifier(expr.local);
         },
 
         ImportNamespaceSpecifier: function (expr, precedence, flags) {
@@ -2251,7 +2255,8 @@
         },
 
         ExportSpecifier: function (expr, precedence, flags) {
-            var result = [ expr.id.name ];
+            debugger;
+            var result = [ expr.local.name ];
             if (expr.name) {
                 result.push(noEmptySpace() + 'as' + noEmptySpace() + generateIdentifier(expr.name));
             }
@@ -2590,6 +2595,9 @@
             return generateVerbatim(expr, precedence);
         }
 
+        if (type === 'Super') {
+            debugger;
+        }
         result = this[type](expr, precedence, flags);
 
 
