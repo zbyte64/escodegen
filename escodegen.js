@@ -2729,7 +2729,11 @@
       if (s.indexOf('"') >= 0 || s.indexOf('\'') >= 0) {
         return raw;
       }
-      return quotes === 'double' ? '"' + s + '"' : '\'' + s + '\'';
+      var quote = '"';
+      if (raw[0] === '\'') {
+        quote = '\'';
+      }
+      return quote + s + quote;
     }
 
     FORMAT_MINIFY = {
