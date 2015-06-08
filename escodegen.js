@@ -1268,6 +1268,12 @@
             return result;
         },
 
+        ExportDefaultDeclaration: function (stmt, flags) {
+            var declaration = this.ExportDeclaration(stmt, flags);
+            declaration.splice(1, 0, ' default');
+            return declaration;
+        },
+
         ExpressionStatement: function (stmt, flags) {
             var result, fragment;
 
@@ -2228,6 +2234,10 @@
             result.push(multiline ? base : '');
             result.push('}');
             return result;
+        },
+
+        AssignmentPattern: function (expr, precedence, flags) {
+            return generateIdentifier(expr.left) + ' = ' + this.generateExpression(expr.right, Precedence.Assignment, E_TTT);
         },
 
         ThisExpression: function (expr, precedence, flags) {
