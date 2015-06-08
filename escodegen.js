@@ -2513,6 +2513,11 @@
           ];
         },
 
+        JSXEmptyExpression: function (expr, precedence, flags) {
+          /* acorn-jsx does not return the comment text, so empty it is */
+          return '';
+        },
+
         JSXIdentifier: function (expr, precedence, flags) {
           return expr.name;
         },
