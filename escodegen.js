@@ -2610,11 +2610,7 @@
             return generateVerbatim(expr, precedence);
         }
 
-        if (type === 'Super') {
-            debugger;
-        }
         result = this[type](expr, precedence, flags);
-
 
         if (extra.comment) {
             result = addComments(expr, result);
