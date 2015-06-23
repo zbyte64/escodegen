@@ -2265,7 +2265,6 @@
         },
 
         ExportSpecifier: function (expr, precedence, flags) {
-            debugger;
             var result = [ expr.local.name ];
             if (expr.name) {
                 result.push(noEmptySpace() + 'as' + noEmptySpace() + generateIdentifier(expr.name));
