@@ -2375,6 +2375,13 @@
             ];
         },
 
+        SpreadProperty: function (expr, precedence, flags) {
+            return [
+                '...',
+                this.generateExpression(expr.argument, Precedence.Assignment, E_TTT)
+            ];
+        },
+
         RestElement: function (expr, precedence, flags) {
           return [
             '...',
