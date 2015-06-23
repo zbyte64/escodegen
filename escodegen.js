@@ -2647,7 +2647,7 @@
         }
 
         if (isExpression(node)) {
-            return codegen.generateExpression(node, Precedence.Sequence, E_TTT);
+            return codegen.generateExpression(node, Precedence.Sequence, E_TTT | F_XJS_NOPAREN);
         }
 
         throw new Error('Unknown node type: ' + node.type);
