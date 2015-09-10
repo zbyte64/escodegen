@@ -1380,7 +1380,7 @@ data = {
             }
         },
 
-        'for (let [\n            a,\n            b\n        ] in obj) {\n}': {
+        'for (let [a, b] in obj) {\n}': {
             generateFrom: {
                 type: 'Program',
                 body: [{
@@ -1421,7 +1421,7 @@ data = {
             }
         },
 
-        'function getIdField([\n    a,\n    b,\n    c\n]) {\n}': {
+        'function getIdField([a, b, c]) {\n}': {
             generateFrom: {
                 type: 'Program',
                 body: [{
@@ -1459,6 +1459,82 @@ data = {
                     expression: false
                 }]
             }
+        },
+
+        '[x, ...y] = list;': {
+            generateFrom: {
+                "type": "Program",
+                "body": [
+                    {
+                        "type": "ExpressionStatement",
+                        "expression": {
+                            "type": "AssignmentExpression",
+                            "operator": "=",
+                            "left": {
+                                "type": "ArrayPattern",
+                                "elements": [
+                                    {
+                                        "type": "Identifier",
+                                        "name": "x"
+                                    },
+                                    {
+                                        "type": "RestElement",
+                                        "argument": {
+                                            "type": "Identifier",
+                                            "name": "y"
+                                        }
+                                    }
+                                ]
+                            },
+                            "right": {
+                                "type": "Identifier",
+                                "name": "list"
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        '[x, ...[y,z]] = list;': {
+            "type": "Program",
+            "body": [
+                {
+                    "type": "ExpressionStatement",
+                    "expression": {
+                        "type": "AssignmentExpression",
+                        "operator": "=",
+                        "left": {
+                            "type": "ArrayPattern",
+                            "elements": [
+                                {
+                                    "type": "Identifier",
+                                    "name": "x"
+                                },
+                                {
+                                    "type": "RestElement",
+                                    "argument": {
+                                        "type": "ArrayPattern",
+                                        "elements": [
+                                            {
+                                                "type": "Identifier",
+                                                "name": "y"
+                                            },
+                                            {
+                                                "type": "Identifier",
+                                                "name": "z"
+                                            }
+                                        ]
+                                    }
+                                }
+                            ]
+                        },
+                        "right": {
+                            "type": "Identifier",
+                            "name": "list"
+                        }
+                    }
+                }
+            ]
         }
     },
 
@@ -4300,6 +4376,42 @@ data = {
                 loc: {
                     start: { line: 1, column: 0 },
                     end: { line: 1, column: 9 }
+                }
+            }
+        }
+    },
+
+    'Harmony super': {
+        'super.abc();': {
+            generateFrom: {
+                type: 'ExpressionStatement',
+                expression: {
+                    type: 'CallExpression',
+                    callee: {
+                        type: 'MemberExpression',
+                        computed: false,
+                        object: {
+                            type: 'Super'
+                        },
+                        property: {
+                            type: 'Identifier',
+                            name: 'abc'
+                        }
+                    },
+                    arguments: []
+                }
+            }
+        },
+
+        'super();': {
+            generateFrom:  {
+                type: 'ExpressionStatement',
+                expression: {
+                    type: 'CallExpression',
+                    callee: {
+                        type: 'Super'
+                    },
+                    arguments: []
                 }
             }
         }

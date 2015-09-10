@@ -472,7 +472,7 @@
             } else if (esutils.code.isLineTerminator(code) || code === 0x5C  /* \ */) {
                 result += escapeDisallowedCharacter(code);
                 continue;
-            } else if ((json && code < 0x20  /* SP */) || !(json || escapeless || (code >= 0x20  /* SP */ && code <= 0x7E  /* ~ */))) {
+            } else if (!esutils.code.isIdentifierPartES5(code) && (json && code < 0x20  /* SP */ || !json && !escapeless && (code < 0x20  /* SP */ || code > 0x7E  /* ~ */))) {
                 result += escapeAllowedCharacter(code, str.charCodeAt(i + 1));
                 continue;
             }
@@ -564,7 +564,7 @@
         rightCharCode = rightSource.charCodeAt(0);
 
         if ((leftCharCode === 0x2B  /* + */ || leftCharCode === 0x2D  /* - */) && leftCharCode === rightCharCode ||
-            esutils.code.isIdentifierPart(leftCharCode) && esutils.code.isIdentifierPart(rightCharCode) ||
+            esutils.code.isIdentifierPartES5(leftCharCode) && esutils.code.isIdentifierPartES5(rightCharCode) ||
             leftCharCode === 0x2F  /* / */ && rightCharCode === 0x69  /* i */) { // infix word operators all start with `i`
             return [left, noEmptySpace(), right];
         } else if (esutils.code.isWhiteSpace(leftCharCode) || esutils.code.isLineTerminator(leftCharCode) ||
@@ -1269,9 +1269,12 @@
         },
 
         ExportDefaultDeclaration: function (stmt, flags) {
-            var declaration = this.ExportDeclaration(stmt, flags);
-            declaration.splice(1, 0, ' default');
-            return declaration;
+             stmt.default = true;
+             return this.ExportDeclaration(stmt, flags);
+        },
+
+        ExportNamedDeclaration: function (stmt, flags) {
+            return this.ExportDeclaration(stmt, flags);
         },
 
         ExpressionStatement: function (stmt, flags) {
@@ -1834,7 +1837,7 @@
 
             leftSource = fragment.toString();
 
-            if (leftSource.charCodeAt(leftSource.length - 1) === 0x2F /* / */ && esutils.code.isIdentifierPart(expr.operator.charCodeAt(0))) {
+            if (leftSource.charCodeAt(leftSource.length - 1) === 0x2F /* / */ && esutils.code.isIdentifierPartES5(expr.operator.charCodeAt(0))) {
                 result = [fragment, noEmptySpace(), expr.operator];
             } else {
                 result = join(fragment, expr.operator);
@@ -1958,7 +1961,7 @@
                     rightCharCode = fragment.toString().charCodeAt(0);
 
                     if (((leftCharCode === 0x2B  /* + */ || leftCharCode === 0x2D  /* - */) && leftCharCode === rightCharCode) ||
-                            (esutils.code.isIdentifierPart(leftCharCode) && esutils.code.isIdentifierPart(rightCharCode))) {
+                            (esutils.code.isIdentifierPartES5(leftCharCode) && esutils.code.isIdentifierPartES5(rightCharCode))) {
                         result.push(noEmptySpace());
                         result.push(fragment);
                     } else {
@@ -2034,15 +2037,15 @@
         },
 
         ArrayPattern: function (expr, precedence, flags) {
-            return this.ArrayExpression(expr, precedence, flags);
+            return this.ArrayExpression(expr, precedence, flags, true);
         },
 
-        ArrayExpression: function (expr, precedence, flags) {
+        ArrayExpression: function (expr, precedence, flags, isPattern) {
             var result, multiline, that = this;
             if (!expr.elements.length) {
                 return '[]';
             }
-            multiline = expr.elements.length > 1;
+            multiline = isPattern ? false : expr.elements.length > 1;
             result = ['[', multiline ? newline : ''];
             withIndent(function (indent) {
                 var i, iz;
@@ -2071,6 +2074,10 @@
             return result;
         },
 
+        RestElement: function(expr, precedence, flags) {
+            return '...' + this.generatePattern(expr.argument);
+        },
+
         ClassExpression: function (expr, precedence, flags) {
             var result, fragment;
             result = ['class'];
@@ -2084,10 +2091,6 @@
             result.push(space);
             result.push(this.generateStatement(expr.body, S_TFFT));
             return result;
-        },
-
-        Super: function (expr, precedence, flags) {
-            return 'super';
         },
 
         MethodDefinition: function (expr, precedence, flags) {
@@ -2244,18 +2247,23 @@
             return 'this';
         },
 
+        Super: function (expr, precedence, flags) {
+            return 'super';
+        },
+
         Identifier: function (expr, precedence, flags) {
             return generateIdentifier(expr);
         },
 
         ImportDefaultSpecifier: function (expr, precedence, flags) {
-            return generateIdentifier(expr.local);
+            return generateIdentifier(expr.id || expr.local);
         },
 
         ImportNamespaceSpecifier: function (expr, precedence, flags) {
             var result = ['*'];
-            if (expr.id) {
-                result.push(space + 'as' + noEmptySpace() + generateIdentifier(expr.id));
+            var id = expr.id || expr.local;
+            if (id) {
+                result.push(space + 'as' + noEmptySpace() + generateIdentifier(id));
             }
             return result;
         },
@@ -2265,7 +2273,7 @@
         },
 
         ExportSpecifier: function (expr, precedence, flags) {
-            var result = [ expr.local.name ];
+            var result = [ (expr.id || expr.local).name ];
             if (expr.name) {
                 result.push(noEmptySpace() + 'as' + noEmptySpace() + generateIdentifier(expr.name));
             }
@@ -2380,13 +2388,6 @@
                 '...',
                 this.generateExpression(expr.argument, Precedence.Assignment, E_TTT)
             ];
-        },
-
-        RestElement: function (expr, precedence, flags) {
-          return [
-            '...',
-            this.generatePattern(expr.argument, Precedence.Assignment, E_TTT)
-          ];
         },
 
         TaggedTemplateExpression: function (expr, precedence, flags) {
