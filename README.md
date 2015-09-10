@@ -5,11 +5,11 @@ Facebook's JSX-parsing fork of Esprima.
 
 ### Escodegen [![Build Status](https://secure.travis-ci.org/Constellation/escodegen.svg)](http://travis-ci.org/Constellation/escodegen) [![Build Status](https://drone.io/github.com/Constellation/escodegen/status.png)](https://drone.io/github.com/Constellation/escodegen/latest) [![devDependency Status](https://david-dm.org/Constellation/escodegen/dev-status.svg)](https://david-dm.org/Constellation/escodegen#info=devDependencies)
 
-Escodegen ([escodegen](http://github.com/Constellation/escodegen)) is an
+Escodegen ([escodegen](http://github.com/estools/escodegen)) is an
 [ECMAScript](http://www.ecma-international.org/publications/standards/Ecma-262.htm)
-(also popularly known as [JavaScript](http://en.wikipedia.org/wiki/JavaScript>JavaScript))
+(also popularly known as [JavaScript](http://en.wikipedia.org/wiki/JavaScript))
 code generator from [Mozilla's Parser API](https://developer.mozilla.org/en/SpiderMonkey/Parser_API)
-AST. See the [online generator](https://constellation.github.io/escodegen/demo/index.html)
+AST. See the [online generator](https://estools.github.io/escodegen/demo/index.html)
 for a demo.
 
 
@@ -38,7 +38,7 @@ A simple example: the program
 
 produces the string `'40 + 2'`.
 
-See the [API page](https://github.com/Constellation/escodegen/wiki/API) for
+See the [API page](https://github.com/estools/escodegen/wiki/API) for
 options. To run the tests, execute `npm test` in the root directory.
 
 ### Building browser bundle / minified browser bundle
